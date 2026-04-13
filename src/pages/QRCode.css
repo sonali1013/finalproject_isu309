@@ -9,6 +9,27 @@
   font-weight: 600;
 }
 
+.qr-submit-top-btn {
+  background: #1f72c9;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.qr-submit-top-btn:hover {
+  background: #155fa8;
+}
+
+.qr-submit-top-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .qr-type-card {
   background: #f8f8f9;
   border: 1px solid #e5e5e6;
@@ -33,6 +54,13 @@
 .qr-type-options {
   display: flex;
   gap: 16px;
+}
+
+.qr-type-options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .qr-dynamic-form {
@@ -130,6 +158,27 @@
   flex-direction: column;
   align-items: center;
   gap: 14px;
+}
+
+.qr-download-btn {
+  background: #1f72c9;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.qr-download-btn:hover {
+  background: #155fa8;
+}
+
+.qr-download-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .qr-card-shell {
@@ -232,11 +281,33 @@
   text-align: center;
 }
 
+.qr-loader-wrap {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-loader-image {
+  width: 120px;
+  height: auto;
+}
+
 .qr-status-text.error {
   color: #c62828;
 }
 
 @media (max-width: 900px) {
+  .qr-type-options-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .qr-submit-top-btn {
+    width: 100%;
+  }
+
   .qr-page-title {
     font-size: 26px;
   }

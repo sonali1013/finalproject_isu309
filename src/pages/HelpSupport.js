@@ -67,9 +67,40 @@ const extractIssueSubTypeOptions = (response) => {
     .filter((option) => option.name);
 };
 
+const getTicketSuccessMessage = (response) => {
+  const message = response?.message
+    || response?.data?.message
+    || response?.result?.message
+    || response?.body?.message;
+
+  return typeof message === 'string' && message.trim()
+    ? message.trim()
+    : 'Ticket Created Successfully!';
+};
+
+const getTicketIdFromResponse = (response) => {
+  const candidates = [
+    response?.ticketId,
+    response?.ticket_id,
+    response?.id,
+    response?.data?.ticketId,
+    response?.data?.ticket_id,
+    response?.data?.id,
+    response?.data?.ticket?.id,
+    response?.result?.ticketId,
+    response?.result?.ticket_id,
+    response?.result?.id,
+    response?.body?.ticketId,
+    response?.body?.ticket_id,
+    response?.body?.id
+  ];
+
+  const matched = candidates.find((value) => value !== undefined && value !== null && String(value).trim() !== '');
+  return matched ? String(matched).trim() : '';
+};
+
 const HelpSupport = ({ mode = 'raise' }) => {
   const navigate = useNavigate();
-  const [raiseTicketConfig, setRaiseTicketConfig] = React.useState(null);
   const [issueTypeOptions, setIssueTypeOptions] = React.useState([]);
   const [selectedIssueType, setSelectedIssueType] = React.useState('');
   const [issueSubTypeOptions, setIssueSubTypeOptions] = React.useState([]);
@@ -79,6 +110,7 @@ const HelpSupport = ({ mode = 'raise' }) => {
   const [attachmentFiles, setAttachmentFiles] = React.useState([]);
   const [submitError, setSubmitError] = React.useState('');
   const [submitSuccess, setSubmitSuccess] = React.useState('');
+  const [ticketSuccessDetails, setTicketSuccessDetails] = React.useState(null);
   const [submitting, setSubmitting] = React.useState(false);
   const attachmentInputRef = React.useRef(null);
 
@@ -110,7 +142,6 @@ const HelpSupport = ({ mode = 'raise' }) => {
     const loadRaiseTicketForm = async () => {
       const cachedResponse = getCachedResponse();
       if (cachedResponse) {
-        setRaiseTicketConfig(cachedResponse);
         setIssueTypeOptions(extractIssueTypeOptions(cachedResponse));
         setIssueSubTypeOptions(extractIssueSubTypeOptions(cachedResponse));
       }
@@ -118,7 +149,6 @@ const HelpSupport = ({ mode = 'raise' }) => {
       try {
         const response = await merchantService.fetchRaiseTicketForm();
         console.log('Raise Ticket form response:', response);
-        setRaiseTicketConfig(response);
         const parsedIssueTypes = extractIssueTypeOptions(response);
         const parsedIssueSubTypes = extractIssueSubTypeOptions(response);
         setIssueTypeOptions(parsedIssueTypes);
@@ -248,6 +278,7 @@ const HelpSupport = ({ mode = 'raise' }) => {
               setAttachmentFiles([]);
               setSubmitError('');
               setSubmitSuccess('');
+              setTicketSuccessDetails(null);
               if (attachmentInputRef.current) {
                 attachmentInputRef.current.value = '';
               }
@@ -263,6 +294,7 @@ const HelpSupport = ({ mode = 'raise' }) => {
             onClick={async () => {
               setSubmitError('');
               setSubmitSuccess('');
+              setTicketSuccessDetails(null);
 
               const selectedIssueTypeOption = issueTypeOptions.find((option) => String(option.id) === String(selectedIssueType));
               const selectedIssueSubTypeOption = issueSubTypeOptions.find((option) => String(option.id) === String(selectedIssueSubType));
@@ -301,8 +333,15 @@ const HelpSupport = ({ mode = 'raise' }) => {
 
               try {
                 setSubmitting(true);
-                await merchantService.createTicket(payload);
-                setSubmitSuccess('Ticket submitted successfully.');
+                const response = await merchantService.createTicket(payload);
+                const successMessage = getTicketSuccessMessage(response);
+                const ticketId = getTicketIdFromResponse(response);
+
+                setSubmitSuccess(successMessage);
+                setTicketSuccessDetails({
+                  message: successMessage,
+                  ticketId
+                });
               } catch (error) {
                 setSubmitError(error?.message || 'Failed to submit ticket.');
               } finally {
@@ -366,6 +405,44 @@ const HelpSupport = ({ mode = 'raise' }) => {
     <div className="help-support-page">
       <h2 className="hs-title">Help &amp; Support</h2>
       {mode === 'raise' ? renderRaiseTicket() : renderViewTickets()}
+      {ticketSuccessDetails ? (
+        <div className="hs-success-modal-backdrop" role="presentation">
+          <div className="hs-success-modal" role="dialog" aria-modal="true" aria-labelledby="ticket-success-title">
+            <button
+              type="button"
+              className="hs-success-close"
+              aria-label="Close success dialog"
+              onClick={() => setTicketSuccessDetails(null)}
+            >
+              ×
+            </button>
+            <div className="hs-success-illustration" aria-hidden="true">
+              <div className="hs-success-phone">
+                <div className="hs-success-phone-screen">
+                  <div className="hs-success-check-circle">
+                    <span className="hs-success-check">✓</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h3 id="ticket-success-title" className="hs-success-title">
+              {ticketSuccessDetails.message}
+            </h3>
+            <p className="hs-success-caption">
+              {ticketSuccessDetails.ticketId
+                ? `You can check its status with the ticket ID: ${ticketSuccessDetails.ticketId}`
+                : 'Your ticket was created successfully.'}
+            </p>
+            <button
+              type="button"
+              className="hs-success-btn"
+              onClick={() => setTicketSuccessDetails(null)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

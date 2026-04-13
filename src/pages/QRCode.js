@@ -4,6 +4,8 @@ import { merchantService } from '../services/merchantService';
 import { authService } from '../services/authService';
 import './QRCode.css';
 
+const LOADER_LOGO_URL = 'https://merchant-cboi-uat.isupay.in/images/loaderLogo-BvMsb5iC.png';
+
 const QRCodePage = () => {
   const [qrType, setQrType] = useState('static');
   const [showQrPreview, setShowQrPreview] = useState(true);
@@ -55,6 +57,7 @@ const QRCodePage = () => {
     }
 
     const conversionResponse = await merchantService.convertToQRBase64(qrString);
+    console.log('convertToQRBase64 response:', conversionResponse);
     const base64Candidate = conversionResponse?.data
       || conversionResponse?.qrBase64
       || conversionResponse?.base64
@@ -78,6 +81,7 @@ const QRCodePage = () => {
       }
 
       const vpaResponse = await merchantService.fetchById(preferredUsername);
+      console.log('fetchById response:', vpaResponse);
       const vpaList = extractVpaList(vpaResponse);
 
       if (!vpaList.length) {
@@ -136,6 +140,42 @@ const QRCodePage = () => {
     setSubmitMessage('Dynamic QR generated successfully.');
   };
 
+  const handleDownloadQR = () => {
+    const qrElement = document.querySelector('.qr-code-box');
+    if (!qrElement) {
+      alert('QR code is not available for download.');
+      return;
+    }
+
+    const canvas = qrElement.querySelector('canvas') || qrElement.querySelector('img');
+    if (!canvas) {
+      alert('Unable to capture QR code.');
+      return;
+    }
+
+    const link = document.createElement('a');
+    if (canvas.tagName === 'IMG') {
+      link.href = canvas.src;
+    } else {
+      link.href = canvas.toDataURL('image/png');
+    }
+
+    const vpaId = selectedVpa?.vpaId || selectedVpa?.vpaAddress || selectedVpa?.upiId || 'QR';
+    link.download = `QR_${vpaId}_${new Date().getTime()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSubmit = () => {
+    if (!selectedVpa) {
+      alert('Please select a VPA first.');
+      return;
+    }
+
+    alert(`QR Code submitted for VPA: ${selectedVpa?.vpaId || selectedVpa?.vpaAddress || 'Unknown'}`);
+  };
+
   return (
     <div className="qr-page">
       <h2 className="qr-page-title">QR Details</h2>
@@ -143,27 +183,30 @@ const QRCodePage = () => {
       <div className="qr-type-card">
         <div className="qr-type-left">
           <p className="qr-type-card-label">Select The Type of QR</p>
-          <div className="qr-type-options">
-            <label className="qr-type-option">
-              <input
-                type="radio"
-                name="qrType"
-                value="static"
-                checked={qrType === 'static'}
-                onChange={handleQrTypeChange}
-              />
-              <span>Static</span>
-            </label>
-            <label className="qr-type-option">
-              <input
-                type="radio"
-                name="qrType"
-                value="dynamic"
-                checked={qrType === 'dynamic'}
-                onChange={handleQrTypeChange}
-              />
-              <span>Dynamic</span>
-            </label>
+          <div className="qr-type-options-row">
+            <div className="qr-type-options">
+              <label className="qr-type-option">
+                <input
+                  type="radio"
+                  name="qrType"
+                  value="static"
+                  checked={qrType === 'static'}
+                  onChange={handleQrTypeChange}
+                />
+                <span>Static</span>
+              </label>
+              <label className="qr-type-option">
+                <input
+                  type="radio"
+                  name="qrType"
+                  value="dynamic"
+                  checked={qrType === 'dynamic'}
+                  onChange={handleQrTypeChange}
+                />
+                <span>Dynamic</span>
+              </label>
+            </div>
+            <button className="qr-submit-top-btn" onClick={handleSubmit}>Submit</button>
           </div>
 
           {qrType === 'dynamic' && (
@@ -194,7 +237,10 @@ const QRCodePage = () => {
         {!showQrPreview ? (
           <p className="qr-status-text">{submitMessage || 'Generate Dynamic QR to show preview.'}</p>
         ) : loading ? (
-          <p className="qr-status-text">Loading QR details...</p>
+          <div className="qr-loader-wrap">
+            <img src={LOADER_LOGO_URL} alt="Loading" className="qr-loader-image" />
+            <p className="qr-status-text">Loading QR details...</p>
+          </div>
         ) : error ? (
           <p className="qr-status-text error">{error}</p>
         ) : (
@@ -230,6 +276,7 @@ const QRCodePage = () => {
                 </div>
               </div>
             </div>
+            <button className="qr-download-btn" onClick={handleDownloadQR}>Download QR</button>
           </div>
         )}
       </div>

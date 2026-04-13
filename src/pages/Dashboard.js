@@ -5,6 +5,117 @@ import './Dashboard.css';
 
 const STORED_VPA_KEY = 'dashboard:selected_vpa';
 
+const getFieldValue = (record, keys = []) => {
+  if (!record || typeof record !== 'object') {
+    return undefined;
+  }
+
+  for (const key of keys) {
+    const value = record[key];
+    if (value !== undefined && value !== null && value !== '') {
+      return value;
+    }
+  }
+
+  return undefined;
+};
+
+const toNumber = (value) => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.replace(/[^\d.-]/g, '');
+    if (!normalized) {
+      return 0;
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+};
+
+const extractMetricsFromRecord = (record) => ({
+  totalTransactions: toNumber(getFieldValue(record, [
+    'totalTransactions',
+    'totalTransaction',
+    'totalTxn',
+    'transactionCount',
+    'txnCount',
+    'total_no_of_transaction',
+    'totalNoOfTransaction',
+    'noOfTransaction',
+    'no_of_transaction',
+    'count'
+  ])),
+  totalAmount: toNumber(getFieldValue(record, [
+    'totalAmount',
+    'total_amount',
+    'txnAmount',
+    'transactionAmount',
+    'totalTxnAmount',
+    'collectionAmount',
+    'amount',
+    'amount_inr'
+  ]))
+});
+
+const extractTransactionMetrics = (response) => {
+  const directMetrics = extractMetricsFromRecord(response);
+  if (directMetrics.totalTransactions > 0 || directMetrics.totalAmount > 0) {
+    return directMetrics;
+  }
+
+  const nestedContainers = [response?.data, response?.body, response?.result];
+  for (const container of nestedContainers) {
+    if (!container) {
+      continue;
+    }
+
+    if (Array.isArray(container)) {
+      const totalTransactions = container.length;
+      const totalAmount = container.reduce((sum, item) => {
+        const amount = getFieldValue(item, [
+          'amount',
+          'txnAmount',
+          'transactionAmount',
+          'amt',
+          'totalAmount',
+          'amount_inr'
+        ]);
+        return sum + toNumber(amount);
+      }, 0);
+
+      return { totalTransactions, totalAmount };
+    }
+
+    const nestedMetrics = extractMetricsFromRecord(container);
+    if (nestedMetrics.totalTransactions > 0 || nestedMetrics.totalAmount > 0) {
+      return nestedMetrics;
+    }
+  }
+
+  return {
+    totalTransactions: 0,
+    totalAmount: 0
+  };
+};
+
+const mergeSelectedVpaDetails = (selectedVpa, response, metrics) => {
+  const details = [response?.data, response?.body, response?.result, response]
+    .find((value) => value && !Array.isArray(value) && typeof value === 'object');
+
+  return {
+    ...selectedVpa,
+    ...(details || {}),
+    totalTransactions: metrics.totalTransactions,
+    totalAmount: metrics.totalAmount
+  };
+};
+
 const Dashboard = () => {
   const [vpas, setVpas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,10 +124,10 @@ const Dashboard = () => {
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState('today');
   const [showMetrics, setShowMetrics] = useState(false);
-  const transactionMetrics = {
+  const [transactionMetrics, setTransactionMetrics] = useState({
     totalTransactions: 0,
     totalAmount: 0
-  };
+  });
 
   const fetchVPAs = useCallback(async () => {
     try {
@@ -55,14 +166,20 @@ const Dashboard = () => {
         try {
           const parsed = JSON.parse(storedVpa);
           setSelectedVpa(parsed);
+          setTransactionMetrics({
+            totalTransactions: toNumber(parsed.totalTransactions),
+            totalAmount: toNumber(parsed.totalAmount)
+          });
           setIsSelectorOpen(false);
           setShowMetrics(true);
         } catch {
           setSelectedVpa(null);
+          setTransactionMetrics({ totalTransactions: 0, totalAmount: 0 });
           setIsSelectorOpen(vpaList.length > 0);
         }
       } else {
         setSelectedVpa(null);
+        setTransactionMetrics({ totalTransactions: 0, totalAmount: 0 });
         setIsSelectorOpen(vpaList.length > 0);
       }
     } catch (err) {
@@ -97,12 +214,17 @@ const Dashboard = () => {
         const parsed = JSON.parse(storedVpa);
         setSelectedVpa(parsed);
         setIsSelectorOpen(false);
+        setTransactionMetrics({
+          totalTransactions: toNumber(parsed.totalTransactions),
+          totalAmount: toNumber(parsed.totalAmount)
+        });
         setShowMetrics(true);
         return;
       } catch {}
     }
     setSelectedVpa(null);
     setIsSelectorOpen(false);
+    setTransactionMetrics({ totalTransactions: 0, totalAmount: 0 });
     setShowMetrics(false);
   };
 
@@ -115,9 +237,13 @@ const Dashboard = () => {
       const vpaId = selectedVpa.vpaId || selectedVpa.vpaAddress || selectedVpa.upiId;
       console.log('Fetching details for VPA ID:', vpaId);
       
-      await merchantService.fetchByVpaId(vpaId);
+      const response = await merchantService.fetchByVpaId(vpaId);
+      const metrics = extractTransactionMetrics(response);
+      const enrichedSelectedVpa = mergeSelectedVpaDetails(selectedVpa, response, metrics);
       
-      sessionStorage.setItem(STORED_VPA_KEY, JSON.stringify(selectedVpa));
+      setSelectedVpa(enrichedSelectedVpa);
+      setTransactionMetrics(metrics);
+      sessionStorage.setItem(STORED_VPA_KEY, JSON.stringify(enrichedSelectedVpa));
       setIsSelectorOpen(false);
       setShowMetrics(true);
     } catch (err) {
@@ -126,6 +252,7 @@ const Dashboard = () => {
   };
 
   const handleVpaIdClick = () => {
+    setTransactionMetrics({ totalTransactions: 0, totalAmount: 0 });
     setShowMetrics(false);
     setIsSelectorOpen(true);
   };
@@ -262,7 +389,7 @@ const Dashboard = () => {
               <div className="metric-content">
                 <p className="metric-label">Total Amount</p>
               </div>
-              <p className="metric-value">{transactionMetrics.totalAmount}</p>
+              <p className="metric-value">{transactionMetrics.totalAmount.toLocaleString('en-IN')}</p>
             </div>
           </div>
         </div>
