@@ -1,23 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 180" role="img" aria-label="Central Bank of India logo">
-  <rect width="700" height="180" fill="#0A76C8"/>
-  <rect x="8" y="8" width="684" height="164" fill="none" stroke="#0A76C8" stroke-width="2"/>
+  <!-- Small gap on outline if any? No, let's just make it exact flat SVG. -->
+  <rect width="700" height="180" fill="#ffffff" />
+  <rect x="4" y="4" width="692" height="172" fill="none" stroke="#D31D4B" stroke-width="0"/>
 
-  <rect x="20" y="24" width="152" height="112" rx="2" fill="#ffffff"/>
-  <rect x="26" y="30" width="140" height="100" rx="2" fill="#ffffff" stroke="#0A76C8" stroke-width="3"/>
-
-  <g transform="translate(96 80)">
-    <polygon points="0,-34 26,-8 0,18 -26,-8" fill="none" stroke="#E21F63" stroke-width="8"/>
-    <polygon points="0,-24 16,-8 0,8 -16,-8" fill="none" stroke="#E21F63" stroke-width="6"/>
-    <line x1="-36" y1="-8" x2="36" y2="-8" stroke="#E21F63" stroke-width="8"/>
-    <line x1="0" y1="-42" x2="0" y2="24" stroke="#E21F63" stroke-width="8"/>
+  <!-- Top Blue Section -->
+  <rect x="0" y="0" width="700" height="145" fill="#0C78C4"/>
+  
+  <!-- Left Side White Square Logo Area -->
+  <rect x="25" y="15" width="130" height="115" fill="#ffffff"/>
+  
+  <!-- The Emblem Graphic -->
+  <g transform="translate(90 73)">
+    <polygon points="0,-36 26,-10 0,16 -26,-10" fill="none" stroke="#D31D4B" stroke-width="8"/>
+    <polygon points="0,-26 16,-10 0,6 -16,-10" fill="none" stroke="#D31D4B" stroke-width="6"/>
+    <line x1="-36" y1="-10" x2="36" y2="-10" stroke="#D31D4B" stroke-width="8"/>
+    <line x1="0" y1="-44" x2="0" y2="22" stroke="#D31D4B" stroke-width="8"/>
   </g>
 
-  <line x1="186" y1="20" x2="186" y2="136" stroke="#B5DBF7" stroke-width="4"/>
+  <!-- Text inside Blue Section -->
+  <text x="180" y="65" fill="#ffffff" font-size="44" font-weight="700" font-family="Arial, Helvetica, sans-serif">सेन्ट्रल बैंक ऑफ़ इंडिया</text>
+  <text x="180" y="125" fill="#ffffff" font-size="52" font-style="italic" font-weight="700" font-family="Arial, Helvetica, sans-serif">Central Bank of India</text>
 
-  <text x="206" y="62" fill="#D4ECFF" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">सेन्ट्रल बैंक ऑफ इंडिया</text>
-  <text x="206" y="114" fill="#ffffff" font-size="52" font-style="italic" font-weight="700" font-family="Arial, Helvetica, sans-serif">Central Bank of India</text>
-
-  <rect x="20" y="140" width="672" height="24" fill="#C9144D"/>
-  <text x="30" y="157" fill="#ffffff" font-size="22" font-weight="700" font-family="Arial, Helvetica, sans-serif">1911 से आपके लिए</text>
-  <text x="300" y="157" fill="#ffffff" font-size="22" font-weight="700" font-family="Arial, Helvetica, sans-serif">"CENTRAL" TO YOU SINCE 1911</text>
+  <!-- Bottom Red Section -->
+  <rect x="0" y="145" width="700" height="35" fill="#DA143C"/>
+  
+  <!-- Text inside Red Section -->
+  <text x="25" y="170" fill="#ffffff" font-size="20" font-weight="700" font-family="Arial, Helvetica, sans-serif">1911 से आपके लिए ''केंद्रित''</text>
+  <text x="680" y="170" text-anchor="end" fill="#ffffff" font-size="20" font-weight="700" font-family="Arial, Helvetica, sans-serif">"CENTRAL" TO YOU SINCE 1911</text>
 </svg>

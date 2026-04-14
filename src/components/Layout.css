@@ -135,38 +135,40 @@
 .nav-menu li a {
   display: flex;
   align-items: center;
-  padding: 19px 26px;
+  padding: 16px 26px; /* Adjust padding */
   color: #2c2f33;
   text-decoration: none;
   transition: all 0.3s;
-  font-size: 14px;
+  font-size: 16px; /* Increase font size */
   font-weight: 500;
   line-height: 1;
-  border-left: 3px solid transparent;
+  border-right: 3px solid transparent; /* Move border to right */
+  border-left: none; /* Remove left border */
 }
 
 .nav-icon {
-  display: inline-block;
-  width: 28px;
-  margin-right: 14px;
-  text-align: center;
-  color: #3b3d41;
-  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  margin-right: 18px; /* More spacing */
+  color: #000000; /* Darker unselected icons */
 }
 
 .nav-menu li a:hover {
-  background-color: #dcecf8;
-  color: #1163bb;
+  background-color: #eaf4fc; /* light blue */
+  color: #1976d2; /* blue text */
 }
 
 .nav-menu li.active a {
-  background-color: #d7e8f6;
-  color: #1163bb;
-  border-left: 3px solid #1f72c9;
+  background-color: #eaf4fc;
+  color: #1976d2;
+  border-right: 3px solid #1976d2; /* solid blue right border */
+  border-left: none;
 }
 
 .nav-menu li.active .nav-icon {
-  color: #1163bb;
+  color: #1976d2;
 }
 
 .support-item {
@@ -175,8 +177,8 @@
   background: transparent;
   color: #2c2f33;
   text-align: left;
-  padding: 19px 26px;
-  font-size: 14px;
+  padding: 16px 26px; /* Matched padding */
+  font-size: 16px; /* Matched font size */
   line-height: 1;
   display: flex;
   align-items: center;
@@ -230,9 +232,9 @@
 }
 
 .support-submenu li.active .support-sub-item {
-  background: #d7e8f6;
-  color: #1267bf;
-  border-right: 3px solid #1f72c9;
+  background: #eaf4fc;
+  color: #1976d2;
+  border-right: 3px solid #1976d2;
 }
 
 .avatar-circle {

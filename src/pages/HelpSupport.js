@@ -112,6 +112,9 @@ const HelpSupport = ({ mode = 'raise' }) => {
   const [submitSuccess, setSubmitSuccess] = React.useState('');
   const [ticketSuccessDetails, setTicketSuccessDetails] = React.useState(null);
   const [submitting, setSubmitting] = React.useState(false);
+  const [viewStartDate, setViewStartDate] = React.useState('');
+  const [viewEndDate, setViewEndDate] = React.useState('');
+  const [viewStatus, setViewStatus] = React.useState('ALL');
   const attachmentInputRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -374,28 +377,54 @@ const HelpSupport = ({ mode = 'raise' }) => {
         <div className="hs-field">
           <label>Start Date</label>
           <div className="hs-input-wrap">
-            <input type="text" readOnly />
-            <span className="hs-input-icon">📅</span>
+            <input 
+              type="date" 
+              value={viewStartDate}
+              onChange={(e) => setViewStartDate(e.target.value)}
+            />
           </div>
         </div>
 
         <div className="hs-field">
           <label>End Date</label>
           <div className="hs-input-wrap">
-            <input type="text" readOnly />
-            <span className="hs-input-icon">📅</span>
+            <input 
+              type="date" 
+              value={viewEndDate}
+              onChange={(e) => setViewEndDate(e.target.value)}
+            />
           </div>
         </div>
 
         <div className="hs-field">
-          <label>Ticket Status</label>
+          <label>Select Status</label>
           <div className="hs-input-wrap">
-            <input type="text" readOnly />
+            <select 
+              value={viewStatus}
+              onChange={(e) => setViewStatus(e.target.value)}
+            >
+              <option value="ALL">ALL</option>
+              <option value="NEW">NEW</option>
+              <option value="OPEN">OPEN</option>
+              <option value="PENDING">PENDING</option>
+              <option value="SOLVED">SOLVED</option>
+              <option value="CLOSED">CLOSED</option>
+            </select>
             <span className="hs-input-icon">⌄</span>
           </div>
         </div>
 
-        <button type="button" className="hs-btn hs-btn-secondary">Reset</button>
+        <button 
+          type="button" 
+          className="hs-btn hs-btn-secondary"
+          onClick={() => {
+            setViewStartDate('');
+            setViewEndDate('');
+            setViewStatus('ALL');
+          }}
+        >
+          Reset
+        </button>
         <button type="button" className="hs-btn">Submit</button>
       </div>
     </>
