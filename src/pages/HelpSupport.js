@@ -115,6 +115,10 @@ const HelpSupport = ({ mode = 'raise' }) => {
   const [viewStartDate, setViewStartDate] = React.useState('');
   const [viewEndDate, setViewEndDate] = React.useState('');
   const [viewStatus, setViewStatus] = React.useState('ALL');
+  const [filterStatusDesc, setFilterStatusDesc] = React.useState('');
+  const [filterError, setFilterError] = React.useState('');
+  const [filterSubmitting, setFilterSubmitting] = React.useState(false);
+  const [fetchedTickets, setFetchedTickets] = React.useState([]);
   const attachmentInputRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -417,16 +421,177 @@ const HelpSupport = ({ mode = 'raise' }) => {
         <button 
           type="button" 
           className="hs-btn hs-btn-secondary"
+          disabled={filterSubmitting}
           onClick={() => {
             setViewStartDate('');
             setViewEndDate('');
             setViewStatus('ALL');
+            setFilterStatusDesc('');
+            setFilterError('');
+            setFetchedTickets([]);
           }}
         >
           Reset
         </button>
-        <button type="button" className="hs-btn">Submit</button>
+        <button 
+          type="button" 
+          className="hs-btn"
+          disabled={filterSubmitting}
+          onClick={async () => {
+            setFilterStatusDesc('');
+            setFilterError('');
+            
+            if (!viewStartDate || !viewEndDate || !viewStatus) {
+              setFilterError('Start date, end date and status are mandatory.');
+              return;
+            }
+            
+            try {
+              setFilterSubmitting(true);
+              const payload = {
+                status: viewStatus,
+                created_after: viewStartDate,
+                created_before: viewEndDate
+              };
+              const resp = await merchantService.filterTickets(payload);
+              
+              // Extract the exact statusDesc as requested
+              const statusDesc = resp?.statusDesc || resp?.statusdesc || resp?.data?.statusDesc || resp?.data?.statusdesc || resp?.message || (typeof resp === 'string' ? resp : JSON.stringify(resp));
+              
+              // If it has failure indications, show as error
+              const isError = resp?.status === 'failed' || resp?.status === 'error' || String(statusDesc).toLowerCase().includes('fail');
+              
+              if (isError) {
+                setFilterError(statusDesc);
+                setFetchedTickets([]);
+              } else {
+                setFilterStatusDesc(statusDesc);
+                
+                // Broadly search for the foremost array of tickets
+                const possibleArrays = [
+                  resp?.data?.results,
+                  resp?.results,
+                  resp?.data?.hits,
+                  resp?.hits,
+                  resp?.data?.tickets,
+                  resp?.tickets,
+                  resp?.data?.data?.tickets,
+                  resp?.custom_fields,
+                  resp?.data?.custom_fields,
+                  resp?.result,
+                  resp?.data?.result,
+                  resp?.data,
+                  resp
+                ];
+                
+                // Find first property that is an Array. We do not check length here so we can appropriately show an empty state if it's literally empty.
+                const ticketsList = possibleArrays.find(arr => Array.isArray(arr)) || [];
+                
+                console.log("Full ticket API response:", resp);
+                console.log("Extracted tickets list:", ticketsList);
+                
+                setFetchedTickets(ticketsList);
+              }
+            } catch (err) {
+              setFilterError(err?.message || 'Failed to filter tickets.');
+              setFetchedTickets([]);
+            } finally {
+              setFilterSubmitting(false);
+            }
+          }}
+        >
+          {filterSubmitting ? 'Submitting...' : 'Submit'}
+        </button>
       </div>
+
+      {filterStatusDesc && <p className="hs-submit-success" style={{ marginTop: '20px' }}>{filterStatusDesc}</p>}
+      {filterError && <p className="hs-submit-error" style={{ marginTop: '20px' }}>{filterError}</p>}
+      
+      {fetchedTickets.length > 0 && (
+        <div className="hs-table-container">
+          <table className="hs-ticket-table">
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>VPA ID</th>
+                <th>Device Serial Number</th>
+                <th>Issue Type</th>
+                <th>Issue Sub Type</th>
+                <th>Subject</th>
+                <th>Created Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {fetchedTickets.map((t, idx) => {
+                const getVal = (mainKey, altKeys = [], cfIds = []) => {
+                  if (t === null || typeof t !== 'object') return '-';
+                  
+                  // Root object check
+                  if (t[mainKey]) return t[mainKey];
+                  for (let k of altKeys) if (t[k]) return t[k];
+                  
+                  // Nested custom_fields object or array
+                  if (Array.isArray(t.custom_fields)) {
+                    for (let c of t.custom_fields) {
+                      if (cfIds.includes(c.id) || cfIds.includes(String(c.id)) || c.name === mainKey || c.id === mainKey) {
+                        return c.value;
+                      }
+                    }
+                  } else if (typeof t.custom_fields === 'object' && t.custom_fields !== null) {
+                    if (t.custom_fields[mainKey]) return t.custom_fields[mainKey];
+                    for (let k of altKeys) if (t.custom_fields[k]) return t.custom_fields[k];
+                  }
+                  
+                  // Sometimes Zendesk puts fields nested in fields array
+                  if (Array.isArray(t.fields)) {
+                    for (let c of t.fields) {
+                      if (cfIds.includes(c.id) || cfIds.includes(String(c.id))) return c.value;
+                    }
+                  }
+                  
+                  return '-';
+                };
+
+                const tId = getVal('Ticket ID', ['ticket_id', 'id', 'id_ticket']);
+                const vpaId = getVal('vpa_id', ['vpaId', 'VPA ID', 'VPA_ID', 'vpaid', 'vpa']);
+                const tid = getVal('device_serial_number', ['serial_number', 'tid', 'Device Serial Number', 'Terminal ID', 'deviceSerialNumber']);
+                const type = getVal('Issue Type', ['issue_type', 'issueType'], [32240028334873]);
+                const subType = getVal('Issue Sub Type', ['issue_sub_type', 'issueSubType'], [32240169914009]);
+                const sub = getVal('Subject', ['subject'], [900013325983]);
+                
+                let created = getVal('Created Date', ['created_date', 'created_at', 'createdAt', 'created']);
+                if (created && created !== '-' && created.includes('T')) {
+                  created = new Date(created).toLocaleDateString('en-GB').replace(/\//g, '-');
+                }
+                
+                const stat = getVal('Status', ['status', 'state']);
+
+                return (
+                  <tr key={tId !== '-' ? tId : idx}>
+                    <td>{tId}</td>
+                    <td>{vpaId}</td>
+                    <td>{tid}</td>
+                    <td>{type}</td>
+                    <td>{subType}</td>
+                    <td>{sub}</td>
+                    <td>{created}</td>
+                    <td>
+                      <span className={`hs-status-pill status-${String(stat).toLowerCase()}`}>
+                        {stat}
+                      </span>
+                    </td>
+                    <td>
+                      <button type="button" className="hs-action-btn">⋮</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 

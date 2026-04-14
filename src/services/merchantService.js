@@ -470,5 +470,33 @@ const token = sessionStorage.getItem('auth:access_token');
       console.error('Error creating ticket:', error);
       throw error;
     }
+  },
+
+  // Filter Tickets
+  filterTickets: async ({ status, created_after, created_before }) => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      return { statusdesc: 'Tickets fetched successfully (mock)', data: [] };
+    }
+    const token = sessionStorage.getItem('auth:access_token'); 
+
+    try {
+      return await apiRequest('https://api-preprod.txninfra.com/encrV4/CBOI/zendesk/v2/filterTickets', {
+        method: 'POST',
+        body: {
+          status: String(status).toLowerCase(),
+          created_after,
+          created_before
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
+          'Authorization': `${token}`
+        }
+      });
+    } catch (error) {
+      console.error('Error filtering tickets:', error);
+      throw error;
+    }
   }
 };
