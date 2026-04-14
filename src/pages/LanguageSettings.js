@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { merchantService } from '../services/merchantService';
+import Loader from '../components/Loader';
 import './LanguageSettings.css';
 
 const STORED_VPA_KEY = 'dashboard:selected_vpa';
@@ -257,10 +258,7 @@ const LanguageSettings = () => {
   if (loading) {
     return (
       <div className="language-settings">
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading language settings...</p>
-        </div>
+        <Loader text="Loading language settings..." fullPage={false} />
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import Loader from '../components/Loader';
 
 const Callback = () => {
   const navigate = useNavigate();
@@ -64,16 +65,7 @@ const Callback = () => {
     );
   }
 
-  return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh' 
-    }}>
-      <div>Processing authentication...</div>
-    </div>
-  );
+  return <Loader text="Processing authentication..." />;
 };
 
 export default Callback;

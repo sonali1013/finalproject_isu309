@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { authService } from '../services/authService';
+import Loader from './Loader';
 
 const ProtectedRoute = ({ children }) => {
   const location = useLocation();
@@ -24,16 +25,7 @@ const ProtectedRoute = ({ children }) => {
   };
 
   if (isLoading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
-        Loading...
-      </div>
-    );
+    return <Loader text="Loading..." />;
   }
 
   if (!isAuthenticated) {

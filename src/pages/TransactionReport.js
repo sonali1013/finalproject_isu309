@@ -1,5 +1,6 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { merchantService } from '../services/merchantService';
+import Loader from '../components/Loader';
 import './TransactionReport.css';
 
 const STORED_VPA_KEY = 'dashboard:selected_vpa';
@@ -389,10 +390,7 @@ const TransactionReport = () => {
         </div>
 
         {loading ? (
-          <div className="tr-status-center">
-            <div className="spinner"></div>
-            <p>Loading transactions...</p>
-          </div>
+          <Loader text="Loading transactions..." fullPage={false} />
         ) : error ? (
           <div className="tr-status-center">
             <p className="tr-error-msg">{error}</p>

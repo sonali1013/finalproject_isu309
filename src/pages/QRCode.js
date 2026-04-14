@@ -4,7 +4,7 @@ import { merchantService } from '../services/merchantService';
 import { authService } from '../services/authService';
 import './QRCode.css';
 
-const LOADER_LOGO_URL = 'https://merchant-cboi-uat.isupay.in/images/loaderLogo-BvMsb5iC.png';
+import Loader from '../components/Loader';
 
 const QRCodePage = () => {
   const [qrType, setQrType] = useState('static');
@@ -237,10 +237,7 @@ const QRCodePage = () => {
         {!showQrPreview ? (
           <p className="qr-status-text">{submitMessage || 'Generate Dynamic QR to show preview.'}</p>
         ) : loading ? (
-          <div className="qr-loader-wrap">
-            <img src={LOADER_LOGO_URL} alt="Loading" className="qr-loader-image" />
-            <p className="qr-status-text">Loading QR details...</p>
-          </div>
+          <Loader text="Loading QR details..." fullPage={false} />
         ) : error ? (
           <p className="qr-status-text error">{error}</p>
         ) : (

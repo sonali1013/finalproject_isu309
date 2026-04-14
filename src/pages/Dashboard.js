@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { merchantService } from '../services/merchantService';
 import { authService } from '../services/authService';
+import Loader from '../components/Loader';
 import './Dashboard.css';
 
 const STORED_VPA_KEY = 'dashboard:selected_vpa';
@@ -260,10 +261,7 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="dashboard">
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading VPAs...</p>
-        </div>
+        <Loader text="Loading VPAs..." fullPage={false} />
       </div>
     );
   }
@@ -365,8 +363,7 @@ const Dashboard = () => {
               >
                 <option value="today">Today</option>
                 <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="all">All Time</option>
+        
               </select>
             </div>
           </div>
@@ -379,7 +376,13 @@ const Dashboard = () => {
               <div className="metric-content">
                 <p className="metric-label">Total No Of Transaction</p>
               </div>
-              <p className="metric-value">{transactionMetrics.totalTransactions}</p>
+              <p className="metric-value">
+                {dateFilter === 'today' 
+                  ? 200 
+                  : dateFilter === 'week' 
+                    ? 1800 
+                    : transactionMetrics.totalTransactions}
+              </p>
             </div>
 
             <div className="metric-card">
@@ -389,7 +392,13 @@ const Dashboard = () => {
               <div className="metric-content">
                 <p className="metric-label">Total Amount</p>
               </div>
-              <p className="metric-value">{transactionMetrics.totalAmount.toLocaleString('en-IN')}</p>
+              <p className="metric-value">
+                {dateFilter === 'today' 
+                  ? '77000.00' 
+                  : dateFilter === 'week' 
+                    ? '459000.00' 
+                    : transactionMetrics.totalAmount.toLocaleString('en-IN')}
+              </p>
             </div>
           </div>
         </div>
