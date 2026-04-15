@@ -123,7 +123,7 @@ const postNoAuthReport = async ({ startDate, endDate, vpaId, mode, expectBlob = 
     try {
       const errorData = await response.json();
       message = errorData?.message || errorData?.error || message;
-    } catch {}
+    } catch { }
     throw new Error(message);
   }
 
@@ -186,7 +186,7 @@ export const merchantService = {
     if (USE_MOCK_DATA) {
       console.log('🔄 Using mock data for VPA details');
       await delay(500); // Simulate network delay
-      return { 
+      return {
         message: `VPA details for ${vpaId} fetched successfully`,
         data: { vpa_id: vpaId }
       };
@@ -199,7 +199,7 @@ export const merchantService = {
 
       const payload = { vpa_id: vpaId.trim() };
       console.log('Fetching VPA details with vpa_id:', vpaId);
-      
+
       const responseData = await apiRequest(FETCH_BY_VPA_ID_URL, {
         method: 'POST',
         authMode: 'raw-authorization-token',
@@ -249,7 +249,7 @@ export const merchantService = {
       }
       return { data: filteredTransactions };
     }
-    
+
     try {
       const response = await apiClient.get(`/merchant/report`, {
         params: {
@@ -273,18 +273,18 @@ export const merchantService = {
       // Return null to use the QR string directly with QRCodeSVG
       return { data: null, qrBase64: null };
     }
-    
+
     try {
       const normalizedQrString = typeof qrString === 'string' ? qrString.trim() : '';
 
       if (!normalizedQrString) {
         throw new Error('QR string is required for conversion.');
       }
-const token = sessionStorage.getItem('auth:access_token'); 
+      const token = sessionStorage.getItem('auth:access_token');
       const response = await apiRequest(QR_CONVERT_TO_BASE64_URL, {
         method: 'POST',
         body: { qrString: normalizedQrString },
-         headers: {
+        headers: {
           'Content-Type': 'application/json',
           'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
           'Authorization': `${token}`
@@ -305,16 +305,16 @@ const token = sessionStorage.getItem('auth:access_token');
       await delay(300);
       return { data: mockCurrentLanguage };
     }
-    
+
     try {
       const normalizedTid = typeof tid === 'string' ? tid.trim() : String(tid || '').trim();
       if (!normalizedTid) {
         throw new Error('Device serial number (tid) is required to fetch current language.');
       }
-const token = sessionStorage.getItem('auth:access_token'); 
+      const token = sessionStorage.getItem('auth:access_token');
       return await apiRequest(`${CURRENT_LANGUAGE_URL}/${encodeURIComponent(normalizedTid)}`, {
         method: 'GET',
-         headers: {
+        headers: {
           'Content-Type': 'application/json',
           'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
           'Authorization': `${token}`
@@ -334,11 +334,11 @@ const token = sessionStorage.getItem('auth:access_token');
       await delay(300);
       return { data: mockLanguages };
     }
-    const token = sessionStorage.getItem('auth:access_token'); 
+    const token = sessionStorage.getItem('auth:access_token');
     try {
       return await apiRequest(FETCH_ALL_LANGUAGE_URL, {
         method: 'GET',
-         headers: {
+        headers: {
           'Content-Type': 'application/json',
           'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
           'Authorization': `${token}`
@@ -359,12 +359,12 @@ const token = sessionStorage.getItem('auth:access_token');
         const languageName = (lang.languageName || lang.name || '').toUpperCase();
         return languageName === String(updateLanguage || '').toUpperCase();
       });
-      return { 
+      return {
         data: { success: true, message: 'Language updated successfully' },
-        language: selectedLanguage 
+        language: selectedLanguage
       };
     }
-    
+
     try {
       const normalizedTid = typeof tid === 'string' ? tid.trim() : String(tid || '').trim();
       const normalizedLanguage = typeof updateLanguage === 'string' ? updateLanguage.trim().toUpperCase() : '';
@@ -376,14 +376,14 @@ const token = sessionStorage.getItem('auth:access_token');
       if (!normalizedLanguage) {
         throw new Error('Selected update language is required.');
       }
-const token = sessionStorage.getItem('auth:access_token'); 
+      const token = sessionStorage.getItem('auth:access_token');
       return await apiRequest(UPDATE_LANGUAGE_URL, {
         method: 'POST',
         body: {
           tid: normalizedTid,
           update_language: normalizedLanguage
         },
-         headers: {
+        headers: {
           'Content-Type': 'application/json',
           'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
           'Authorization': `${token}`
@@ -454,13 +454,13 @@ const token = sessionStorage.getItem('auth:access_token');
       await delay(300);
       return { message: 'Ticket created successfully', data: { ticketId: 'MOCK-001' } };
     }
-    const token = sessionStorage.getItem('auth:access_token'); 
+    const token = sessionStorage.getItem('auth:access_token');
 
     try {
       return await apiRequest(CREATE_TICKET_URL, {
         method: 'POST',
         body: payload,
-         headers: {
+        headers: {
           'Content-Type': 'application/json',
           'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
           'Authorization': `${token}`
@@ -478,7 +478,7 @@ const token = sessionStorage.getItem('auth:access_token');
       await delay(300);
       return { statusdesc: 'Tickets fetched successfully (mock)', data: [] };
     }
-    const token = sessionStorage.getItem('auth:access_token'); 
+    const token = sessionStorage.getItem('auth:access_token');
 
     try {
       return await apiRequest('https://api-preprod.txninfra.com/encrV4/CBOI/zendesk/v2/filterTickets', {
@@ -496,6 +496,112 @@ const token = sessionStorage.getItem('auth:access_token');
       });
     } catch (error) {
       console.error('Error filtering tickets:', error);
+      throw error;
+    }
+  },
+
+  // View Ticket Details
+  viewTicket: async (ticketId) => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      return { statusdesc: 'Ticket fetched successfully (mock)', data: { ticket_id: ticketId, history: [] } };
+    }
+    const token = sessionStorage.getItem('auth:access_token');
+
+    try {
+      return await apiRequest('https://api-preprod.txninfra.com/encrV4/CBOI/zendesk/v2/viewTicket', {
+        method: 'POST',
+        body: {
+          ticket_id: parseInt(ticketId, 10)
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
+          'Authorization': `${token}`
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching ticket details:', error);
+      throw error;
+    }
+  },
+
+  // Show Comments
+  showComment: async (ticketId) => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      return { statusdesc: 'Comments fetched successfully (mock)', data: { messages: [] } };
+    }
+    const token = sessionStorage.getItem('auth:access_token');
+
+    try {
+      return await apiRequest('https://api-preprod.txninfra.com/encrV4/CBOI/zendesk/v2/showComment', {
+        method: 'POST',
+        body: {
+          ticket_id: parseInt(ticketId, 10)
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
+          'Authorization': `${token}`
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching ticket comments:', error);
+      throw error;
+    }
+  },
+
+  // Close Ticket
+  closeTicketStatus: async (ticketId, remark) => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      return { statusdesc: 'Ticket closed successfully (mock)', data: {} };
+    }
+    const token = sessionStorage.getItem('auth:access_token');
+
+    try {
+      return await apiRequest('https://api-preprod.txninfra.com/encrV4/CBOI/zendesk/v2/closeStatus', {
+        method: 'POST',
+        body: {
+          ticket_id: parseInt(ticketId, 10),
+          remark: remark
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
+          'Authorization': `${token}`
+        }
+      });
+    } catch (error) {
+      console.error('Error closing ticket:', error);
+      throw error;
+    }
+  },
+
+  // Reopen Ticket
+  reopenTicketStatus: async (ticketId, remark) => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      return { statusdesc: 'Ticket reopened successfully (mock)', data: {} };
+    }
+    const token = sessionStorage.getItem('auth:access_token');
+
+    try {
+      return await apiRequest('https://api-preprod.txninfra.com/encrV4/CBOI/zendesk/v2/reopenStatus', {
+        method: 'POST',
+        body: {
+          ticket_id: parseInt(ticketId, 10),
+          remark: remark
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
+          'Authorization': `${token}`
+        }
+      });
+    } catch (error) {
+      console.error('Error reopening ticket:', error);
       throw error;
     }
   }

@@ -163,36 +163,40 @@ const Layout = ({ children }) => {
           <button className="menu-toggle" type="button" aria-label="Menu">
             <span>☰</span>
           </button>
-          <div className="top-right-user">
-            <span className="username">{displayName}</span>
-            <div className="avatar-wrapper" ref={dropdownRef}>
-              <button
-                type="button"
-                className="avatar-circle"
-                onClick={() => setDropdownOpen((prev) => !prev)}
-                aria-label="User menu"
-              >
-                {avatarEmoji || initials}
-              </button>
-              {dropdownOpen && (
-                <div className="avatar-dropdown">
-                  <button
-                    type="button"
-                    className="dropdown-item"
-                    onClick={handleViewProfile}
-                  >
-                    View Profile
-                  </button>
-                  <button
-                    type="button"
-                    className="dropdown-item dropdown-item--logout"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
+          <div className="top-right-user" ref={dropdownRef}>
+            <button
+              type="button"
+              className="user-profile-btn"
+              onClick={() => setDropdownOpen((prev) => !prev)}
+              aria-label="User menu"
+            >
+              <div className="user-avatar-circle">
+                {user?.profile?.avatar_url ? (
+                  <img src={user.profile.avatar_url} alt="avatar" />
+                ) : (
+                  avatarEmoji || initials
+                )}
+              </div>
+              <span className="user-profile-name">{displayName}</span>
+            </button>
+            {dropdownOpen && (
+              <div className="avatar-dropdown">
+                <button
+                  type="button"
+                  className="dropdown-item"
+                  onClick={handleViewProfile}
+                >
+                  View Profile
+                </button>
+                <button
+                  type="button"
+                  className="dropdown-item dropdown-item--logout"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
