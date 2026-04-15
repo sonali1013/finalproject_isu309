@@ -134,7 +134,7 @@ const Dashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       await authService.getUser();
       const preferredUsername = authService.getStoredPreferredUsername();
 
@@ -159,7 +159,7 @@ const Dashboard = () => {
       }
 
       console.log('Dashboard decoded VPA list count:', vpaList.length);
-      
+
       setVpas(vpaList);
 
       const storedVpa = sessionStorage.getItem(STORED_VPA_KEY);
@@ -186,14 +186,14 @@ const Dashboard = () => {
     } catch (err) {
       console.error('Error fetching VPAs:', err);
       console.error('Error details:', err.response?.data || err.message);
-      
+
       let errorMessage = 'Failed to load VPA list. Please try again.';
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.message) {
         errorMessage = `Error: ${err.message}`;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -221,7 +221,7 @@ const Dashboard = () => {
         });
         setShowMetrics(true);
         return;
-      } catch {}
+      } catch { }
     }
     setSelectedVpa(null);
     setIsSelectorOpen(false);
@@ -237,11 +237,11 @@ const Dashboard = () => {
     try {
       const vpaId = selectedVpa.vpaId || selectedVpa.vpaAddress || selectedVpa.upiId;
       console.log('Fetching details for VPA ID:', vpaId);
-      
+
       const response = await merchantService.fetchByVpaId(vpaId);
       const metrics = extractTransactionMetrics(response);
       const enrichedSelectedVpa = mergeSelectedVpaDetails(selectedVpa, response, metrics);
-      
+
       setSelectedVpa(enrichedSelectedVpa);
       setTransactionMetrics(metrics);
       sessionStorage.setItem(STORED_VPA_KEY, JSON.stringify(enrichedSelectedVpa));
@@ -356,14 +356,14 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="dashboard-filters">
-              <select 
-                value={dateFilter} 
+              <select
+                value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
                 className="date-filter-select"
               >
                 <option value="today">Today</option>
                 <option value="week">This Week</option>
-        
+
               </select>
             </div>
           </div>
@@ -371,33 +371,33 @@ const Dashboard = () => {
           <div className="metrics-container">
             <div className="metric-card">
               <div className="metric-icon transaction-icon">
-                <span>↔</span>
+                <span>⇄</span>
               </div>
               <div className="metric-content">
                 <p className="metric-label">Total No Of Transaction</p>
               </div>
               <p className="metric-value">
-                {dateFilter === 'today' 
-                  ? 200 
-                  : dateFilter === 'week' 
-                    ? 1800 
-                    : transactionMetrics.totalTransactions}
+                {dateFilter === 'today'
+                  ? 200
+                  : dateFilter === 'week'
+                    ? 800
+                    : transactionMetrics?.totalTransactions || 0}
               </p>
             </div>
 
             <div className="metric-card">
               <div className="metric-icon amount-icon">
-                <span>₹</span>
+                <span>💵</span>
               </div>
               <div className="metric-content">
                 <p className="metric-label">Total Amount</p>
               </div>
               <p className="metric-value">
-                {dateFilter === 'today' 
-                  ? '77000.00' 
-                  : dateFilter === 'week' 
-                    ? '459000.00' 
-                    : transactionMetrics.totalAmount.toLocaleString('en-IN')}
+                {dateFilter === 'today'
+                  ? '77000.00'
+                  : dateFilter === 'week'
+                    ? '477000.00'
+                    : transactionMetrics?.totalAmount ? transactionMetrics.totalAmount.toLocaleString('en-IN') : 0}
               </p>
             </div>
           </div>
