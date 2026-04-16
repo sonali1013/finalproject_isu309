@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { merchantService } from '../services/merchantService';
 import './HelpSupport.css';
+import Loader from '../components/Loader';
 
 const RAISE_TICKET_CACHE_KEY = 'helpSupport:raiseTicketFormResponse';
 
@@ -130,6 +131,7 @@ const HelpSupport = ({ mode = 'raise' }) => {
   const [reopenTicketRemark, setReopenTicketRemark] = React.useState('');
   const [reopenTicketSubmitting, setReopenTicketSubmitting] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState(null);
+  const [pageLoading, setPageLoading] = React.useState(false);
   const attachmentInputRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -240,6 +242,8 @@ Description: ${description}
       if (cachedResponse) {
         setIssueTypeOptions(extractIssueTypeOptions(cachedResponse));
         setIssueSubTypeOptions(extractIssueSubTypeOptions(cachedResponse));
+      } else {
+        setPageLoading(true);
       }
 
       try {
@@ -252,6 +256,8 @@ Description: ${description}
         storeCachedResponse(response);
       } catch (error) {
         console.error('Raise Ticket form load failed:', error);
+      } finally {
+        setPageLoading(false);
       }
     };
 
@@ -493,7 +499,7 @@ Description: ${description}
 
         <div className="hs-ticket-info-card">
           <div className="hs-ticket-info-title">
-            <svg viewBox="0 0 24 24" fill="#6d7a8d"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+            <svg viewBox="0 0 24 24" fill="#6d7a8d"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z" /></svg>
             Ticket ID: #{tId}
           </div>
           <div className="hs-ticket-info-grid">
@@ -515,7 +521,7 @@ Description: ${description}
                 <p>{mobile !== '-' ? mobile : '9348781833'}</p>
               </div>
             </div>
-            
+
             <div className="hs-info-col hs-info-col-2">
               <div className="hs-info-item">
                 <span>VPA ID</span>
@@ -544,7 +550,7 @@ Description: ${description}
 
         <div className="hs-messages-section">
           <h4 className="hs-messages-title">Messages</h4>
-          
+
           {viewTicketLoading ? (
             <div className="hs-messages-loading">Loading history...</div>
           ) : viewTicketError ? (
@@ -560,11 +566,11 @@ Description: ${description}
                   const d = new Date(time);
                   formattedTime = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                 }
-                
+
                 return (
                   <div key={idx} className="hs-message-item">
                     <div className="hs-msg-avatar">
-                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
                     </div>
                     <div className="hs-msg-content">
                       <div className="hs-msg-header">
@@ -581,7 +587,7 @@ Description: ${description}
             <div className="hs-messages-list">
               <div className="hs-message-item">
                 <div className="hs-msg-avatar">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
                 </div>
                 <div className="hs-msg-content">
                   <div className="hs-msg-header">
@@ -593,7 +599,7 @@ Description: ${description}
               </div>
               <div className="hs-message-item">
                 <div className="hs-msg-avatar">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
                 </div>
                 <div className="hs-msg-content">
                   <div className="hs-msg-header">
@@ -608,9 +614,9 @@ Description: ${description}
 
           <div className="hs-reply-box">
             <div className="hs-msg-avatar">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
             </div>
-            <input type="text" placeholder="Reply here..." className="hs-reply-input"/>
+            <input type="text" placeholder="Reply here..." className="hs-reply-input" />
             <div className="hs-reply-actions">
               <button className="hs-reply-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
               <button className="hs-reply-icon-btn hs-reply-send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg></button>
@@ -639,8 +645,8 @@ Description: ${description}
         <div className="hs-field">
           <label>Start Date</label>
           <div className="hs-input-wrap">
-            <input 
-              type="date" 
+            <input
+              type="date"
               value={viewStartDate}
               onChange={(e) => setViewStartDate(e.target.value)}
             />
@@ -650,8 +656,8 @@ Description: ${description}
         <div className="hs-field">
           <label>End Date</label>
           <div className="hs-input-wrap">
-            <input 
-              type="date" 
+            <input
+              type="date"
               value={viewEndDate}
               onChange={(e) => setViewEndDate(e.target.value)}
             />
@@ -661,7 +667,7 @@ Description: ${description}
         <div className="hs-field">
           <label>Select Status</label>
           <div className="hs-input-wrap">
-            <select 
+            <select
               value={viewStatus}
               onChange={(e) => setViewStatus(e.target.value)}
             >
@@ -676,8 +682,8 @@ Description: ${description}
           </div>
         </div>
 
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="hs-btn hs-btn-secondary"
           disabled={filterSubmitting}
           onClick={() => {
@@ -691,19 +697,19 @@ Description: ${description}
         >
           Reset
         </button>
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="hs-btn"
           disabled={filterSubmitting}
           onClick={async () => {
             setFilterStatusDesc('');
             setFilterError('');
-            
+
             if (!viewStartDate || !viewEndDate || !viewStatus) {
               setFilterError('Start date, end date and status are mandatory.');
               return;
             }
-            
+
             try {
               setFilterSubmitting(true);
               const payload = {
@@ -712,19 +718,19 @@ Description: ${description}
                 created_before: viewEndDate
               };
               const resp = await merchantService.filterTickets(payload);
-              
+
               // Extract the exact statusDesc as requested
               const statusDesc = resp?.statusDesc || resp?.statusdesc || resp?.data?.statusDesc || resp?.data?.statusdesc || resp?.message || (typeof resp === 'string' ? resp : JSON.stringify(resp));
-              
+
               // If it has failure indications, show as error
               const isError = resp?.status === 'failed' || resp?.status === 'error' || String(statusDesc).toLowerCase().includes('fail');
-              
+
               if (isError) {
                 setFilterError(statusDesc);
                 setFetchedTickets([]);
               } else {
                 setFilterStatusDesc(statusDesc);
-                
+
                 // Broadly search for the foremost array of tickets
                 const possibleArrays = [
                   resp?.data?.results,
@@ -741,13 +747,13 @@ Description: ${description}
                   resp?.data,
                   resp
                 ];
-                
+
                 // Find first property that is an Array. We do not check length here so we can appropriately show an empty state if it's literally empty.
                 const ticketsList = possibleArrays.find(arr => Array.isArray(arr)) || [];
-                
+
                 console.log("Full ticket API response:", resp);
                 console.log("Extracted tickets list:", ticketsList);
-                
+
                 setFetchedTickets(ticketsList);
               }
             } catch (err) {
@@ -764,7 +770,7 @@ Description: ${description}
 
       {filterStatusDesc && <p className="hs-submit-success" style={{ marginTop: '20px' }}>{filterStatusDesc}</p>}
       {filterError && <p className="hs-submit-error" style={{ marginTop: '20px' }}>{filterError}</p>}
-      
+
       {fetchedTickets.length > 0 && (
         <div className="hs-table-container">
           <table className="hs-ticket-table">
@@ -785,11 +791,11 @@ Description: ${description}
               {fetchedTickets.map((t, idx) => {
                 const getVal = (mainKey, altKeys = [], cfIds = []) => {
                   if (t === null || typeof t !== 'object') return '-';
-                  
+
                   // Root object check
                   if (t[mainKey]) return t[mainKey];
                   for (let k of altKeys) if (t[k]) return t[k];
-                  
+
                   // Nested custom_fields object or array
                   if (Array.isArray(t.custom_fields)) {
                     for (let c of t.custom_fields) {
@@ -801,14 +807,14 @@ Description: ${description}
                     if (t.custom_fields[mainKey]) return t.custom_fields[mainKey];
                     for (let k of altKeys) if (t.custom_fields[k]) return t.custom_fields[k];
                   }
-                  
+
                   // Sometimes Zendesk puts fields nested in fields array
                   if (Array.isArray(t.fields)) {
                     for (let c of t.fields) {
                       if (cfIds.includes(c.id) || cfIds.includes(String(c.id))) return c.value;
                     }
                   }
-                  
+
                   return '-';
                 };
 
@@ -818,12 +824,12 @@ Description: ${description}
                 const type = getVal('Issue Type', ['issue_type', 'issueType'], [32240028334873]);
                 const subType = getVal('Issue Sub Type', ['issue_sub_type', 'issueSubType'], [32240169914009]);
                 const sub = getVal('Subject', ['subject'], [900013325983]);
-                
+
                 let created = getVal('Created Date', ['created_date', 'created_at', 'createdAt', 'created']);
                 if (created && created !== '-' && created.includes('T')) {
                   created = new Date(created).toLocaleDateString('en-GB').replace(/\//g, '-');
                 }
-                
+
                 const stat = getVal('Status', ['status', 'state']);
 
                 return (
@@ -841,8 +847,8 @@ Description: ${description}
                       </span>
                     </td>
                     <td style={{ position: 'relative' }}>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className="hs-action-btn"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -851,8 +857,8 @@ Description: ${description}
                       >⋮</button>
                       {activeActionMenu === tId && (
                         <div className="hs-action-dropdown">
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             className="hs-action-item"
                             onClick={async () => {
                               setActiveActionMenu(null);
@@ -864,7 +870,7 @@ Description: ${description}
                                   merchantService.viewTicket(tId).catch(() => null),
                                   merchantService.showComment(tId).catch(() => null)
                                 ]);
-                                
+
                                 const commentResp = respArray[1];
                                 const possibleHistories = [
                                   commentResp?.messages, commentResp?.data?.messages, commentResp?.data?.data?.messages,
@@ -888,8 +894,8 @@ Description: ${description}
                             Download
                           </button>
                           {String(stat).toUpperCase() === 'SOLVED' && (
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               className="hs-action-item"
                               onClick={() => {
                                 setActiveActionMenu(null);
@@ -902,8 +908,8 @@ Description: ${description}
                             </button>
                           )}
                           {String(stat).toUpperCase() !== 'CLOSED' && (
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               className="hs-action-item hs-action-item-danger"
                               onClick={() => {
                                 setActiveActionMenu(null);
@@ -948,7 +954,7 @@ Description: ${description}
         const message = resp?.statusdesc || resp?.message || resp?.data?.statusdesc || 'Ticket closed successfully';
         setToastMessage({ type: 'success', text: message });
         setCloseTicketModalData(null);
-        
+
         setFetchedTickets(prev => prev.map(ticket => {
           const currId = getTicketVal(ticket, 'Ticket ID', ['ticket_id', 'id', 'id_ticket']);
           if (String(currId) === String(tId)) {
@@ -970,6 +976,8 @@ Description: ${description}
       }
     };
 
+
+
     return (
       <div className="hs-close-modal-backdrop" role="presentation">
         <div className="hs-close-modal">
@@ -979,7 +987,7 @@ Description: ${description}
               <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
           </div>
-          
+
           <div className="hs-close-modal-info-box">
             <h4 className="hs-close-info-title">Ticket ID: #{tId}</h4>
             <div className="hs-close-info-grid">
@@ -1005,8 +1013,8 @@ Description: ${description}
           <div className="hs-close-modal-body">
             <div className="hs-field">
               <label>Remark <span className="hs-required">*</span></label>
-              <textarea 
-                rows="4" 
+              <textarea
+                rows="4"
                 placeholder="Enter Your Remarks"
                 value={closeTicketRemark}
                 onChange={(e) => setCloseTicketRemark(e.target.value)}
@@ -1015,14 +1023,14 @@ Description: ${description}
           </div>
 
           <div className="hs-close-modal-footer">
-            <button 
-              className="hs-btn-close-cancel" 
+            <button
+              className="hs-btn-close-cancel"
               onClick={() => setCloseTicketModalData(null)}
               disabled={closeTicketSubmitting}
             >
               Cancel
             </button>
-            <button 
+            <button
               className={`hs-btn-close-submit ${closeTicketRemark.trim() ? 'active' : ''}`}
               disabled={!closeTicketRemark.trim() || closeTicketSubmitting}
               onClick={handleCloseTicketSubmit}
@@ -1055,7 +1063,7 @@ Description: ${description}
         const message = resp?.statusdesc || resp?.message || resp?.data?.statusdesc || 'Ticket reopened successfully';
         setToastMessage({ type: 'success', text: message });
         setReopenTicketModalData(null);
-        
+
         setFetchedTickets(prev => prev.map(ticket => {
           const currId = getTicketVal(ticket, 'Ticket ID', ['ticket_id', 'id', 'id_ticket']);
           if (String(currId) === String(tId)) {
@@ -1086,7 +1094,7 @@ Description: ${description}
               <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
           </div>
-          
+
           <div className="hs-close-modal-info-box">
             <h4 className="hs-close-info-title">Ticket ID: #{tId}</h4>
             <div className="hs-close-info-grid">
@@ -1110,11 +1118,11 @@ Description: ${description}
           </div>
 
           <div className="hs-close-modal-body">
-            <p className="hs-reopen-confirm-msg">This action will change the ticket status from Solved to Open.<br/>Are you sure you want to reopen it?</p>
+            <p className="hs-reopen-confirm-msg">This action will change the ticket status from Solved to Open.<br />Are you sure you want to reopen it?</p>
             <div className="hs-field">
               <label>Remark <span className="hs-required">*</span></label>
-              <textarea 
-                rows="4" 
+              <textarea
+                rows="4"
                 placeholder="Enter Your Remarks"
                 value={reopenTicketRemark}
                 onChange={(e) => setReopenTicketRemark(e.target.value)}
@@ -1123,14 +1131,14 @@ Description: ${description}
           </div>
 
           <div className="hs-close-modal-footer">
-            <button 
-              className="hs-btn-close-cancel" 
+            <button
+              className="hs-btn-close-cancel"
               onClick={() => setReopenTicketModalData(null)}
               disabled={reopenTicketSubmitting}
             >
               Cancel
             </button>
-            <button 
+            <button
               className={`hs-btn-close-submit ${reopenTicketRemark.trim() ? 'active' : ''}`}
               disabled={!reopenTicketRemark.trim() || reopenTicketSubmitting}
               onClick={handleReopenTicketSubmit}
@@ -1146,7 +1154,7 @@ Description: ${description}
   return (
     <div className="help-support-page">
       <h2 className="hs-title">Help &amp; Support</h2>
-      {mode === 'raise' ? renderRaiseTicket() : (selectedTicketForDetails ? renderTicketDetails() : renderViewTickets())}
+      {pageLoading ? <Loader /> : (mode === 'raise' ? renderRaiseTicket() : (selectedTicketForDetails ? renderTicketDetails() : renderViewTickets()))}
       {ticketSuccessDetails ? (
         <div className="hs-success-modal-backdrop" role="presentation">
           <div className="hs-success-modal" role="dialog" aria-modal="true" aria-labelledby="ticket-success-title">
@@ -1185,10 +1193,10 @@ Description: ${description}
           </div>
         </div>
       ) : null}
-      
+
       {renderCloseModal()}
       {renderReopenModal()}
-      
+
       {toastMessage && (
         <div className={`hs-toast-notification hs-toast-${toastMessage.type}`}>
           {toastMessage.text}
