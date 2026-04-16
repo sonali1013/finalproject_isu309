@@ -7,7 +7,7 @@ const USE_MOCK_DATA = process.env.REACT_APP_USE_MOCK_DATA === 'true';
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const FETCH_BY_VPA_ID_URL = process.env.REACT_APP_FETCH_BY_ID_URL
-  || '/api/preprod/encrV4/CBOI/fetch/fetchById';
+  || 'https://api-preprod.txninfra.com/encrV4/CBOI/fetch/fetchById';
 const DEFAULT_REPORT_QUERY_URL = 'https://services-cboi-uat.isupay.in/CBOI/reports/querysubmit_username';
 const LEGACY_REPORT_QUERY_URL = 'https://services-cboiuat.isupay.in/CBOI/reports/querysubmit_username';
 const configuredReportUrl = (process.env.REACT_APP_REPORT_QUERY_URL || '').trim();
@@ -17,7 +17,7 @@ const REPORT_QUERY_URL = !configuredReportUrl || configuredReportUrl === LEGACY_
 const QR_CONVERT_TO_BASE64_URL = process.env.REACT_APP_QR_CONVERT_TO_BASE64_URL
   || '/api/preprod/encrV4/CBOI/merchant/qr_convert_to_base64';
 const CURRENT_LANGUAGE_URL = process.env.REACT_APP_CURRENT_LANGUAGE_URL
-  || '/api/preprod/encrV4/CBOI/isu_soundbox/user_api/current_language';
+  || 'https://api-preprod.txninfra.com/encrV4/CBOI/isu_soundbox/user_api/current_language';
 const FETCH_ALL_LANGUAGE_URL = process.env.REACT_APP_FETCH_ALL_LANGUAGE_URL
   || '/api/preprod/encrV4/CBOI/isu_soundbox/lang/fetch_language';
 const UPDATE_LANGUAGE_URL = process.env.REACT_APP_UPDATE_LANGUAGE_URL
@@ -25,7 +25,7 @@ const UPDATE_LANGUAGE_URL = process.env.REACT_APP_UPDATE_LANGUAGE_URL
 const RAISE_TICKET_FORM_URL = process.env.REACT_APP_RAISE_TICKET_FORM_URL
   || '/api/services/isu/elastic/fetch';
 const CREATE_TICKET_URL = process.env.REACT_APP_CREATE_TICKET_URL
-  || '/api/preprod/encrV4/CBOI/zendesk/v2/createTicket';
+  || 'https://api-preprod.txninfra.com/encrV4/CBOI/zendesk/v2/createTicket';
 
 const parseJsonOrText = async (response) => {
   try {
@@ -602,6 +602,38 @@ export const merchantService = {
       });
     } catch (error) {
       console.error('Error reopening ticket:', error);
+      throw error;
+    }
+  },
+
+  // Get dynamic QR string
+  getDynamicQrString: async ({ txnAmount, serialNo }) => {
+    if (USE_MOCK_DATA) {
+      await delay(300);
+      return { qr_string: 'upi://pay?pa=mock&am=' + txnAmount };
+    }
+    const token = sessionStorage.getItem('auth:access_token');
+
+    const url = 'https://services-cboi-uat.isupay.in/CBOI/merchant/get-qr-string';
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'pass_key': 'c0CKRG7yNFY3OIxY92izqj0YeMk6JPqdOlGgqsv3mhicXmAv',
+          'Authorization': `${token}`
+        },
+        body: JSON.stringify({ txnAmount: String(txnAmount), serialNo: String(serialNo || '') })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed with status ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      return responseData;
+    } catch (error) {
+      console.error('Error fetching dynamic QR:', error);
       throw error;
     }
   }

@@ -373,7 +373,11 @@ export async function apiRequest(url, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || `API request failed with status ${response.status}`);
+    const errorMessage = data?.statusDesc || data?.statusdesc || data?.statusDescription ||
+      data?.data?.statusDesc || data?.data?.statusdesc ||
+      data?.status || data?.message ||
+      `API request failed with status ${response.status}`;
+    throw new Error(errorMessage);
   }
 
   return data;

@@ -6,20 +6,7 @@ import './Dashboard.css';
 
 const STORED_VPA_KEY = 'dashboard:selected_vpa';
 
-const getFieldValue = (record, keys = []) => {
-  if (!record || typeof record !== 'object') {
-    return undefined;
-  }
 
-  for (const key of keys) {
-    const value = record[key];
-    if (value !== undefined && value !== null && value !== '') {
-      return value;
-    }
-  }
-
-  return undefined;
-};
 
 const toNumber = (value) => {
   if (typeof value === 'number') {
@@ -39,71 +26,7 @@ const toNumber = (value) => {
   return 0;
 };
 
-const extractMetricsFromRecord = (record) => ({
-  totalTransactions: toNumber(getFieldValue(record, [
-    'totalTransactions',
-    'totalTransaction',
-    'totalTxn',
-    'transactionCount',
-    'txnCount',
-    'total_no_of_transaction',
-    'totalNoOfTransaction',
-    'noOfTransaction',
-    'no_of_transaction',
-    'count'
-  ])),
-  totalAmount: toNumber(getFieldValue(record, [
-    'totalAmount',
-    'total_amount',
-    'txnAmount',
-    'transactionAmount',
-    'totalTxnAmount',
-    'collectionAmount',
-    'amount',
-    'amount_inr'
-  ]))
-});
 
-const extractTransactionMetrics = (response) => {
-  const directMetrics = extractMetricsFromRecord(response);
-  if (directMetrics.totalTransactions > 0 || directMetrics.totalAmount > 0) {
-    return directMetrics;
-  }
-
-  const nestedContainers = [response?.data, response?.body, response?.result];
-  for (const container of nestedContainers) {
-    if (!container) {
-      continue;
-    }
-
-    if (Array.isArray(container)) {
-      const totalTransactions = container.length;
-      const totalAmount = container.reduce((sum, item) => {
-        const amount = getFieldValue(item, [
-          'amount',
-          'txnAmount',
-          'transactionAmount',
-          'amt',
-          'totalAmount',
-          'amount_inr'
-        ]);
-        return sum + toNumber(amount);
-      }, 0);
-
-      return { totalTransactions, totalAmount };
-    }
-
-    const nestedMetrics = extractMetricsFromRecord(container);
-    if (nestedMetrics.totalTransactions > 0 || nestedMetrics.totalAmount > 0) {
-      return nestedMetrics;
-    }
-  }
-
-  return {
-    totalTransactions: 0,
-    totalAmount: 0
-  };
-};
 
 const mergeSelectedVpaDetails = (selectedVpa, response, metrics) => {
   const details = [response?.data, response?.body, response?.result, response]
@@ -168,8 +91,8 @@ const Dashboard = () => {
           const parsed = JSON.parse(storedVpa);
           setSelectedVpa(parsed);
           setTransactionMetrics({
-            totalTransactions: toNumber(parsed.totalTransactions),
-            totalAmount: toNumber(parsed.totalAmount)
+            totalTransactions: 0,
+            totalAmount: 0
           });
           setIsSelectorOpen(false);
           setShowMetrics(true);
@@ -203,6 +126,50 @@ const Dashboard = () => {
   useEffect(() => {
     fetchVPAs();
   }, [fetchVPAs]);
+
+  useEffect(() => {
+    if (!selectedVpa || !showMetrics) return;
+
+    const fetchMetrics = async () => {
+      try {
+        const endDateObj = new Date();
+        const startDateObj = new Date();
+        if (dateFilter === 'week') {
+          startDateObj.setDate(startDateObj.getDate() - 7);
+        }
+
+        const formatDate = (date) => {
+          const d = String(date.getDate()).padStart(2, '0');
+          const m = String(date.getMonth() + 1).padStart(2, '0');
+          const y = date.getFullYear();
+          return `${d}/${m}/${y}`;
+        };
+
+        const startDate = formatDate(startDateObj);
+        const endDate = formatDate(endDateObj);
+        const vpaId = selectedVpa.vpaId || selectedVpa.vpaAddress || selectedVpa.upiId;
+
+        const response = await merchantService.queryReport({
+          startDate,
+          endDate,
+          vpaId,
+          mode: 'both'
+        });
+
+        const rowCount = toNumber(response?.row_count ?? response?.data?.row_count) || 0;
+        const totalAmt = toNumber(response?.total_amount ?? response?.data?.total_amount) || 0;
+
+        setTransactionMetrics({
+          totalTransactions: rowCount,
+          totalAmount: totalAmt
+        });
+      } catch (err) {
+        console.error('Error fetching dashboard metrics:', err);
+      }
+    };
+
+    fetchMetrics();
+  }, [selectedVpa, dateFilter, showMetrics]);
 
   const handleRefresh = () => {
     fetchVPAs();
@@ -239,11 +206,10 @@ const Dashboard = () => {
       console.log('Fetching details for VPA ID:', vpaId);
 
       const response = await merchantService.fetchByVpaId(vpaId);
-      const metrics = extractTransactionMetrics(response);
-      const enrichedSelectedVpa = mergeSelectedVpaDetails(selectedVpa, response, metrics);
+      const enrichedSelectedVpa = mergeSelectedVpaDetails(selectedVpa, response, { totalTransactions: 0, totalAmount: 0 });
 
       setSelectedVpa(enrichedSelectedVpa);
-      setTransactionMetrics(metrics);
+      setTransactionMetrics({ totalTransactions: 0, totalAmount: 0 });
       sessionStorage.setItem(STORED_VPA_KEY, JSON.stringify(enrichedSelectedVpa));
       setIsSelectorOpen(false);
       setShowMetrics(true);
@@ -377,11 +343,7 @@ const Dashboard = () => {
                 <p className="metric-label">Total No Of Transaction</p>
               </div>
               <p className="metric-value">
-                {dateFilter === 'today'
-                  ? 200
-                  : dateFilter === 'week'
-                    ? 800
-                    : transactionMetrics?.totalTransactions || 0}
+                {transactionMetrics?.totalTransactions || 0}
               </p>
             </div>
 
@@ -393,11 +355,7 @@ const Dashboard = () => {
                 <p className="metric-label">Total Amount</p>
               </div>
               <p className="metric-value">
-                {dateFilter === 'today'
-                  ? '77000.00'
-                  : dateFilter === 'week'
-                    ? '477000.00'
-                    : transactionMetrics?.totalAmount ? transactionMetrics.totalAmount.toLocaleString('en-IN') : 0}
+                {transactionMetrics?.totalAmount ? transactionMetrics.totalAmount.toLocaleString('en-IN') : 0}
               </p>
             </div>
           </div>

@@ -182,7 +182,7 @@ const HelpSupport = ({ mode = 'raise' }) => {
     const tid = getTicketVal(t, 'device_serial_number', ['serial_number', 'tid', 'Device Serial Number']);
     const type = getTicketVal(t, 'Issue Type', ['issue_type', 'issueType'], [32240028334873]);
     const subType = getTicketVal(t, 'Issue Sub Type', ['issue_sub_type', 'issueSubType'], [32240169914009]);
-    const stat = getTicketVal(t, 'Status', ['status', 'state']);
+    const stat = getTicketVal(t, 'Status', ['statusDesc', 'statusdesc', 'status', 'state']);
     let created = getTicketVal(t, 'Created Date', ['created_date', 'created_at']);
     if (created && created !== '-' && created.includes('T')) {
       created = new Date(created).toLocaleDateString('en-GB').replace(/\//g, '-');
@@ -242,6 +242,7 @@ Description: ${description}
       if (cachedResponse) {
         setIssueTypeOptions(extractIssueTypeOptions(cachedResponse));
         setIssueSubTypeOptions(extractIssueSubTypeOptions(cachedResponse));
+        return;
       } else {
         setPageLoading(true);
       }
@@ -445,7 +446,11 @@ Description: ${description}
                   ticketId
                 });
               } catch (error) {
-                setSubmitError(error?.message || 'Failed to submit ticket.');
+                const errorMessage = error?.message || 'Failed to submit ticket.';
+                setSubmitError(errorMessage);
+                setToastMessage({ type: 'error', text: errorMessage });
+                // Auto-hide toast after 5 seconds
+                setTimeout(() => setToastMessage(null), 5000);
               } finally {
                 setSubmitting(false);
               }
@@ -470,7 +475,7 @@ Description: ${description}
     if (created && created !== '-' && created.includes('T')) {
       created = new Date(created).toLocaleDateString('en-GB').replace(/\//g, '-');
     }
-    const stat = getTicketVal(t, 'Status', ['status', 'state']);
+    const stat = getTicketVal(t, 'Status', ['statusDesc', 'statusdesc', 'status', 'state']);
     const type = getTicketVal(t, 'Issue Type', ['issue_type', 'issueType'], [32240028334873]);
     const subType = getTicketVal(t, 'Issue Sub Type', ['issue_sub_type', 'issueSubType'], [32240169914009]);
     const mobile = getTicketVal(t, 'mobile_number', ['registered_mobile_number', 'mobile', 'merchant_mobile']);
@@ -830,7 +835,7 @@ Description: ${description}
                   created = new Date(created).toLocaleDateString('en-GB').replace(/\//g, '-');
                 }
 
-                const stat = getVal('Status', ['status', 'state']);
+                const stat = getVal('Status', ['statusDesc', 'statusdesc', 'status', 'state']);
 
                 return (
                   <tr key={tId !== '-' ? tId : idx}>
@@ -940,7 +945,7 @@ Description: ${description}
     const tId = getTicketVal(t, 'Ticket ID', ['ticket_id', 'id']);
     const type = getTicketVal(t, 'Issue Type', ['issue_type'], [32240028334873]);
     const subType = getTicketVal(t, 'Issue Sub Type', ['issue_sub_type'], [32240169914009]);
-    const stat = getTicketVal(t, 'Status', ['status', 'state']);
+    const stat = getTicketVal(t, 'Status', ['statusDesc', 'statusdesc', 'status', 'state']);
     let created = getTicketVal(t, 'Created Date', ['created_date', 'created_at']);
     if (created && created !== '-' && created.includes('T')) {
       created = new Date(created).toLocaleDateString('en-GB').replace(/\//g, '-');
@@ -1049,7 +1054,7 @@ Description: ${description}
     const tId = getTicketVal(t, 'Ticket ID', ['ticket_id', 'id']);
     const type = getTicketVal(t, 'Issue Type', ['issue_type'], [32240028334873]);
     const subType = getTicketVal(t, 'Issue Sub Type', ['issue_sub_type'], [32240169914009]);
-    const stat = getTicketVal(t, 'Status', ['status', 'state']);
+    const stat = getTicketVal(t, 'Status', ['statusDesc', 'statusdesc', 'status', 'state']);
     let created = getTicketVal(t, 'Created Date', ['created_date', 'created_at']);
     if (created && created !== '-' && created.includes('T')) {
       created = new Date(created).toLocaleDateString('en-GB').replace(/\//g, '-');

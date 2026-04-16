@@ -97,6 +97,7 @@ const QRCodePage = () => {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -116,7 +117,7 @@ const QRCodePage = () => {
     setShowQrPreview(false);
   };
 
-  const handleDynamicGenerate = (event) => {
+  const handleDynamicGenerate = async (event) => {
     event.preventDefault();
     const amount = dynamicAmount.trim();
     const amountNumber = Number(amount);
@@ -128,14 +129,37 @@ const QRCodePage = () => {
 
     const vpaId = selectedVpa?.vpaId || selectedVpa?.vpaAddress || selectedVpa?.upiId;
     const merchantName = selectedVpa?.merchantName || 'Merchant';
+    const serialNo = selectedVpa?.serialNumber || selectedVpa?.terminal_id || '';
+
     if (!vpaId) {
       setSubmitMessage('VPA is not available for this merchant.');
       return;
     }
 
-    const dynamicQrString = `upi://pay?pa=${encodeURIComponent(vpaId)}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
+    const fallbackQrString = `upi://pay?pa=${encodeURIComponent(vpaId)}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
+    
+    setSubmitMessage('Generating dynamic QR...');
+    setShowQrPreview(false);
+
+    try {
+      if (serialNo) {
+        const resp = await merchantService.getDynamicQrString({ txnAmount: amount, serialNo });
+        const dynamicUrl = resp?.qrString || resp?.qr_string || resp?.data?.qrString || resp?.data?.qr_string;
+        if (dynamicUrl) {
+          setQrBase64(null);
+          setQrValue(dynamicUrl);
+          setShowQrPreview(true);
+          setSubmitMessage('Dynamic QR generated successfully.');
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed Dynamic QR API call, falling back to manual generation', err);
+    }
+
+    // Fall back to building it manually on error or 404
     setQrBase64(null);
-    setQrValue(dynamicQrString);
+    setQrValue(fallbackQrString);
     setShowQrPreview(true);
     setSubmitMessage('Dynamic QR generated successfully.');
   };
