@@ -23,6 +23,11 @@
   height: 100%;
   flex-shrink: 0;
   border-right: 1px solid #d6d6d6;
+  transition: width 0.3s ease;
+}
+
+.header-left.collapsed {
+  width: 80px;
 }
 
 .header-bank-logo {
@@ -40,7 +45,13 @@
   font-size: 26px;
   padding: 0 18px;
   margin-left: 6px;
-  cursor: default;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.menu-toggle:hover {
+  background-color: #e0e0e0;
+  border-radius: 4px;
 }
 
 .top-right-user {
@@ -58,6 +69,12 @@
   width: 315px;
   background-color: #ffffff;
   border-right: 1px solid #d6d6d6;
+  transition: width 0.3s ease;
+  overflow-x: hidden;
+}
+
+.sidebar.collapsed {
+  width: 80px;
 }
 
 .bank-brand {
@@ -77,6 +94,13 @@
   max-width: 268px;
   height: auto;
   display: block;
+  object-fit: contain;
+  transition: all 0.3s ease;
+}
+
+.header-left.collapsed .bank-logo-image {
+  width: 50px;
+  height: auto;
   object-fit: contain;
 }
 
@@ -136,6 +160,12 @@
   line-height: 1;
   border-right: 3px solid transparent; /* Move border to right */
   border-left: none; /* Remove left border */
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .nav-menu li a {
+  padding: 16px 0;
+  justify-content: center;
 }
 
 .nav-icon {
@@ -145,6 +175,12 @@
   width: 24px;
   margin-right: 18px; /* More spacing */
   color: #000000; /* Darker unselected icons */
+  flex-shrink: 0;
+  transition: margin 0.3s ease;
+}
+
+.sidebar.collapsed .nav-icon {
+  margin-right: 0;
 }
 
 .nav-menu li a:hover {
@@ -176,6 +212,12 @@
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .support-item {
+  padding: 16px 0;
+  justify-content: center;
 }
 
 .support-item:hover {

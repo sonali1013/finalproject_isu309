@@ -12,6 +12,7 @@ const Layout = ({ children }) => {
   const [logoLoadError, setLogoLoadError] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
   const [profileLoading, setProfileLoading] = React.useState(false);
   const [profileError, setProfileError] = React.useState('');
   const [deviceInfo, setDeviceInfo] = React.useState(null);
@@ -140,7 +141,7 @@ const Layout = ({ children }) => {
     <div className="layout">
       <header className="header">
         <div className="header-content">
-          <div className="header-left">
+          <div className={`header-left ${isSidebarCollapsed ? 'collapsed' : ''}`}>
             <div className="header-bank-logo">
               {!logoLoadError ? (
                 <img
@@ -160,8 +161,25 @@ const Layout = ({ children }) => {
               )}
             </div>
           </div>
-          <button className="menu-toggle" type="button" aria-label="Menu">
-            <span>☰</span>
+          <button 
+            className="menu-toggle" 
+            type="button" 
+            aria-label={isSidebarCollapsed ? "Expand Menu" : "Collapse Menu"}
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          >
+            <svg 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="currentColor" 
+              style={{ transform: isSidebarCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}
+            >
+              <rect x="3" y="4" width="18" height="2" rx="1" />
+              <rect x="9" y="9" width="12" height="2" rx="1" />
+              <rect x="9" y="14" width="12" height="2" rx="1" />
+              <rect x="3" y="19" width="18" height="2" rx="1" />
+              <path d="M7 12.5l-4 3V9.5l4 3z" />
+            </svg>
           </button>
           <div className="top-right-user" ref={dropdownRef}>
             <button
@@ -203,31 +221,31 @@ const Layout = ({ children }) => {
 
       <MockDataBanner />
 
-      <div className="main-container">
-        <nav className="sidebar">
+      <div className={`main-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <nav className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
           <ul className="nav-menu">
             <li className={isActive('/dashboard')}>
-              <Link to="/dashboard">
+              <Link to="/dashboard" title={isSidebarCollapsed ? 'Dashboard' : ''}>
                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="m10 14-2.5 2.5"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/><path d="M12 3v2"/><path d="M3 12h2"/><path d="M21 12h-2"/><path d="M18.4 5.6l-1.4 1.4"/><path d="M5.6 5.6l1.4 1.4"/></svg>
-                Dashboard
+                {!isSidebarCollapsed && <span>Dashboard</span>}
               </Link>
             </li>
             <li className={isActive('/transactions')}>
-              <Link to="/transactions">
+              <Link to="/transactions" title={isSidebarCollapsed ? 'Transaction Reports' : ''}>
                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                Transaction Reports
+                {!isSidebarCollapsed && <span>Transaction Reports</span>}
               </Link>
             </li>
             <li className={isActive('/qr-code')}>
-              <Link to="/qr-code">
+              <Link to="/qr-code" title={isSidebarCollapsed ? 'QR Details' : ''}>
                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h2v2h-2z" /><path d="M18 14h3v2h-3z" /><path d="M14 18h3v3h-3z" /><path d="M19 19h2v2h-2z" /></svg>
-                QR Details
+                {!isSidebarCollapsed && <span>QR Details</span>}
               </Link>
             </li>
             <li className={isActive('/language')}>
-              <Link to="/language">
+              <Link to="/language" title={isSidebarCollapsed ? 'Language Update' : ''}>
                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m5 8 6 6" /><path d="m4 14 6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" /><path d="m22 22-5-10-5 10" /><path d="M14 18h6" /></svg>
-                Language Update
+                {!isSidebarCollapsed && <span>Language Update</span>}
               </Link>
             </li>
             <li className={`support-menu-item ${supportOpen ? 'open' : ''}`}>
@@ -236,16 +254,19 @@ const Layout = ({ children }) => {
                 className="support-item"
                 onClick={() => setSupportOpen((prev) => !prev)}
                 aria-expanded={supportOpen}
+                title={isSidebarCollapsed ? 'Help & Support' : ''}
               >
-                <span style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                   <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  Help &amp; Support
-                </span>
-                <span className="support-chevron">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="20" height="20" style={{ transform: supportOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}><polyline points="6 9 12 15 18 9"/></svg>
-                </span>
+                  {!isSidebarCollapsed && <span>Help &amp; Support</span>}
+                </div>
+                {!isSidebarCollapsed && (
+                  <span className="support-chevron">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="20" height="20" style={{ transform: supportOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}><polyline points="6 9 12 15 18 9"/></svg>
+                  </span>
+                )}
               </button>
-              {supportOpen && (
+              {supportOpen && !isSidebarCollapsed && (
                 <ul className="support-submenu">
                   <li className={isActive('/help-support/raise-ticket')}>
                     <Link to="/help-support/raise-ticket" className="support-sub-item">

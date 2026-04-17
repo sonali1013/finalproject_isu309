@@ -23,24 +23,23 @@ code {
   min-height: 100vh;
 }
 
-/* Scrollbar styling */
+/* Hide scrollbars globally */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* WebKit (Chrome, Safari, etc.) */
+}
+
+/* Scrollbar styling (Disabled)
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
+...
+*/
 
 /* Global button reset */
 button {

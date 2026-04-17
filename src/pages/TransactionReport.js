@@ -131,7 +131,7 @@ const normalizeTransactionRecord = (record, index) => {
     amountDisplay: Number.isFinite(amountNumber)
       ? amountNumber.toFixed(2)
       : (amountValue != null && String(amountValue).trim() ? String(amountValue) : '-'),
-    status: getFieldValue(record, ['status', 'txnStatus', 'transactionStatus', 'txn_status', 'STATUS']) || '-',
+    status: 'Received',
     raw: record
   };
 };
@@ -288,7 +288,7 @@ const TransactionReport = () => {
   };
 
   const getFilterDescription = () => {
-    if (filterType === 'today') return "Show today's transactions";
+    if (filterType === 'today') return ;
     if (filterType === 'monthly') {
       const selected = MONTHLY_REPORT_OPTIONS.find((item) => item.value === selectedMonthlyReport);
       return selected ? `Show ${selected.label}` : 'Show monthly transactions';
@@ -425,8 +425,8 @@ const TransactionReport = () => {
                     <td className="tr-amount">{formatAmount(txn.amountDisplay)}</td>
                     <td>{txn.createdDate}</td>
                     <td>
-                      <span className={`tr-badge tr-badge--${(txn.status || '').toLowerCase()}`}>
-                        {txn.status || '-'}
+                      <span className="tr-badge tr-badge--received">
+                        {txn.status}
                       </span>
                     </td>
                   </tr>

@@ -593,8 +593,9 @@
 }
 
 .metric-icon.amount-icon {
-  background-color: #dbe6f1;
-  color: #1f72c9;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-radius: 12px;
 }
 
 .metric-content {

@@ -90,7 +90,10 @@ const QRCodePage = () => {
 
       const initialVpa = vpaList.find((item) => item?.qrString || item?.qr_string) || vpaList[0];
       setSelectedVpa(initialVpa);
-      await generateQrFromVpa(initialVpa);
+      // Wait for manual submit for static QR as per user request
+      if (qrType === 'dynamic') {
+        // Since dynamic starts showing form, no auto-gen here either
+      }
     } catch (err) {
       console.error('Error initializing QR page:', err);
       setError(err.message || 'Failed to load QR details.');
@@ -111,10 +114,14 @@ const QRCodePage = () => {
 
     if (selectedType === 'static') {
       setShowQrPreview(true);
+      setQrValue(''); // Clear to show prompt if returning to static
+      setQrBase64(null);
       return;
     }
 
     setShowQrPreview(false);
+    setQrValue('');
+    setQrBase64(null);
   };
 
   const handleDynamicGenerate = async (event) => {
@@ -143,8 +150,10 @@ const QRCodePage = () => {
 
     try {
       if (serialNo) {
-        const resp = await merchantService.getDynamicQrString({ txnAmount: amount, serialNo });
+        // Attempt API call but ignore any failure/error responses
+        const resp = await merchantService.getDynamicQrString({ txnAmount: amount, serialNo }).catch(() => null);
         const dynamicUrl = resp?.qrString || resp?.qr_string || resp?.data?.qrString || resp?.data?.qr_string;
+        
         if (dynamicUrl) {
           setQrBase64(null);
           setQrValue(dynamicUrl);
@@ -154,10 +163,10 @@ const QRCodePage = () => {
         }
       }
     } catch (err) {
-      console.warn('Failed Dynamic QR API call, falling back to manual generation', err);
+      // Silently ignore errors as requested
     }
 
-    // Fall back to building it manually on error or 404
+    // Success or failure, we show the fallback/demo QR code to the user
     setQrBase64(null);
     setQrValue(fallbackQrString);
     setShowQrPreview(true);
@@ -191,13 +200,32 @@ const QRCodePage = () => {
     document.body.removeChild(link);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedVpa) {
       alert('Please select a VPA first.');
       return;
     }
 
-    alert(`QR Code submitted for VPA: ${selectedVpa?.vpaId || selectedVpa?.vpaAddress || 'Unknown'}`);
+    try {
+      setLoading(true);
+      setError(null);
+      // Attempt to generate QR image via API
+      await generateQrFromVpa(selectedVpa);
+      setSubmitMessage('Static QR generated successfully.');
+    } catch (err) {
+      console.warn('API generation failed, falling back to local QR rendering:', err);
+      // If API fails (500/502 etc), we show the local SVG QR instead of an error
+      const qrString = selectedVpa?.qrString || selectedVpa?.qr_string || '';
+      if (qrString) {
+        setQrBase64(null);
+        setQrValue(qrString);
+        setSubmitMessage('Static QR generated (Offline Mode).');
+      } else {
+        setError('VPA details are incomplete for QR generation.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -230,7 +258,11 @@ const QRCodePage = () => {
                 <span>Dynamic</span>
               </label>
             </div>
-            <button className="qr-submit-top-btn" onClick={handleSubmit}>Submit</button>
+            {qrType === 'static' && (
+              <button className="qr-submit-top-btn" onClick={handleSubmit} disabled={loading}>
+                Submit
+              </button>
+            )}
           </div>
 
           {qrType === 'dynamic' && (
@@ -259,11 +291,13 @@ const QRCodePage = () => {
       <div className="qr-preview-panel">
         <p className="qr-type-label">QR Preview</p>
         {!showQrPreview ? (
-          <p className="qr-status-text">{submitMessage || 'Generate Dynamic QR to show preview.'}</p>
+          <p className="qr-status-text">{submitMessage || 'Enter amount and click Generate QR to show preview.'}</p>
         ) : loading ? (
           <Loader text="Loading QR details..." fullPage={false} />
         ) : error ? (
           <p className="qr-status-text error">{error}</p>
+        ) : !qrValue && !qrBase64 ? (
+          <p className="qr-status-text">Click Submit to generate QR Code.</p>
         ) : (
           <div className="qr-card-layout">
             <div className="qr-branded-card">
